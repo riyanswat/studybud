@@ -17,7 +17,13 @@ from .forms import RoomForm
 # ]
 
 
+# login
 def loginPage(request):  # dont use just 'login' cuz theres a builtin login func
+    page = "login"
+
+    if request.user.is_authenticated:
+        return redirect('home')
+
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -35,15 +41,21 @@ def loginPage(request):  # dont use just 'login' cuz theres a builtin login func
         else:
             messages.error(request, "Username OR password doesn't exist")
 
-    context = {}
+    context = {"page": page}
     return render(request, "base/login_register.html", context)
 
 
+def registerPage(request):
+    page = "register"
+    return render(request, "base/login_register.html")
+
+# logout
 def logoutUser(request):
     logout(request)
     return redirect('home')
 
 
+# home
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ""
     rooms = Room.objects.filter(
@@ -59,12 +71,14 @@ def home(request):
     return render(request, 'base/home.html', context)
 
 
+# room view
 def room(request, pk):
     room = Room.objects.get(id=pk)
     context = {'room': room}
     return render(request, 'base/room.html', context)
 
 
+# create room
 @login_required(login_url='login')
 def createRoom(request):
     form = RoomForm()
@@ -79,6 +93,7 @@ def createRoom(request):
     return render(request, 'base/room_form.html', context)
 
 
+# edit room
 @login_required(login_url='login')
 def updateRoom(request, pk):
     room = Room.objects.get(id=pk)
@@ -97,6 +112,7 @@ def updateRoom(request, pk):
     return render(request, 'base/room_form.html', context)
 
 
+# delete a room
 @login_required(login_url='login')
 def deleteRoom(request, pk):
     room = Room.objects.get(id=pk)
