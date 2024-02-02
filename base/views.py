@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 # relative imports
 from .models import Room, Topic, Message
-from .forms import RoomForm
+from .forms import RoomForm, UserForm
 
 
 # --------------------------- LOGIN PAGE ---------------------------
@@ -136,7 +136,7 @@ def createRoom(request):
         return redirect('home')
 
     context = {'form': form, 'topics': topics}
-    return render(request, 'base/room_form.html', context)
+    return render(request, "base/room_form.html", context)
 
 
 # --------------------------- EDIT ROOM ---------------------------
@@ -192,3 +192,19 @@ def deleteMessage(request, pk):
         return redirect("home")
 
     return render(request, "base/delete.html", {"obj": message})
+
+# --------------------------- UPDATE USER ---------------------------
+
+
+@login_required(login_url='login')
+def updateUser(request):
+    user = request.user
+    form = UserForm(instance=user)
+
+    if request.method == "POST":
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user-profile', pk=user.id)
+
+    return render(request, 'base/update-user.html', {'form': form})
